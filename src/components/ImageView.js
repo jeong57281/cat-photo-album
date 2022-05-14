@@ -26,7 +26,7 @@ export default class ImageView extends Component {
     if(this.$props.imgSrc === '') return;
     const $modal = this.$target.querySelector('.Modal');
     $modal.addEventListener('keydown', (e) => {
-        if(e.key === 'Escape') this.$props.hideImage();
+      if(e.key === 'Escape') this.$props.hideImage();
     });
     $modal.focus();
   }

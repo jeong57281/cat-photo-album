@@ -1,10 +1,10 @@
 import Component from "../core/Component.js";
 
+/**
+ * $props 
+ * @param {boolean} loading
+ */
 export default class Loading extends Component {
-  /**
-   * $props 
-   * @param {boolean} loading
-   */
   template() {
     return `
       ${ this.$props.loading
@@ -19,5 +19,5 @@ export default class Loading extends Component {
       }
     `;
   }
-  // 로딩 화면은 버블링으로 인한 오류가 있나?
+  // 모든 클릭 이벤트가 위임으로 처리되어 있어 버블링으로 인한 예기치 못한 동작은 일어나지 않음
 }

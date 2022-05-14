@@ -5,6 +5,8 @@ import Loading from "./components/Loading.js";
 import { request } from "./api/index.js";
 import ImageView from "./components/ImageView.js";
 
+const cache = {};
+
 export default class App extends Component {
   async setup() {
     /**
@@ -23,14 +25,20 @@ export default class App extends Component {
      */
     this.$state = {
       path: {
-        id: ['null'],
+        id: ['undefined'],
         name: [],
       },
       data: {},
       loading: false,
       imgSrc: ''
-    }
-    // root 폴더 불러오기
+    };
+    // cache
+    if(cache.hasOwnProperty('undefined')){
+      this.$state.data = cache.undefined;
+      this.setState(this.$state);
+      return;
+    } 
+    // request
     this.setState({
       ...this.$state,
       loading: true
@@ -39,6 +47,7 @@ export default class App extends Component {
     for(let i of res){
       this.$state.data[i.id] = i;
     }
+    cache.undefined = this.$state.data;
     this.$state.path.name.push('root'); // 처음 root 폴더가 나타나지 않게 데이터 불러온 이후에 추가
     this.$state.loading = false;
     this.setState(this.$state);
@@ -65,7 +74,7 @@ export default class App extends Component {
       ...this.$state,
       next: this.next.bind(this),
       prev: this.prev.bind(this),
-      showImage: this.showImage.bind(this),
+      showImage: this.showImage.bind(this)
     });
     new Loading($loading, {
       loading: this.$state.loading
@@ -82,31 +91,39 @@ export default class App extends Component {
    * @property {string} name
    */
   async next(item) {
-    this.setState({
-      ...this.$state,
-      loading: true
-    });
+    // newState
     const {id, name} = item;
     const newState = {
       path: {
-        name: [...this.$state.path.name, name],
-        id: [...this.$state.path.id, id]
+        name: [...this.$state.path.name],
+        id: [...this.$state.path.id]
       },
       data: {},
       loading: false
     };
-    const res = await request(id);
-    for(let i of res){
-      newState.data[i.id] = i;
+    newState.path.name.push(name);
+    newState.path.id.push(id);
+    // cache
+    if(cache.hasOwnProperty(id)){
+      newState.data = cache[id];
+      this.setState(newState);
+      return;
     }
-    this.setState(newState);
-  }
-  // 직전 노드로 이동하는 함수
-  async prev() {
+    // request
     this.setState({
       ...this.$state,
       loading: true
     });
+    const res = await request(id);
+    for(let i of res){
+      newState.data[i.id] = i;
+    }
+    cache[id] = newState.data;
+    this.setState(newState);
+  }
+  // 직전 노드로 이동하는 함수
+  async prev() {
+    // newState
     const newState = {
       path: {
         name: [...this.$state.path.name],
@@ -117,37 +134,56 @@ export default class App extends Component {
     };
     newState.path.name.pop();
     newState.path.id.pop();
-    const lastIdx = newState.path.name.lenght-1;
-    const id = newState.path[lastIdx];
-    const res = await request(id);
-    for(let i of res){
-      newState.data[i.id] = i;
+    const lastIdx = newState.path.name.length-1;
+    const id = newState.path.id[lastIdx];
+    // cache
+    if(cache.hasOwnProperty(id)){
+      newState.data = cache[id];
+      this.setState(newState);
+      return;
     }
-    this.setState(newState);
-  }
-  // 선택한 과거 노드로 이동하는 함수
-  async past(idx) {
-    if(idx === this.$state.path.id.length-1) return;
+    // request
     this.setState({
       ...this.$state,
       loading: true
     });
-    const newState = {
-      path: {
-        name: [...this.$state.path.name],
-        id: [...this.$state.path.id]
-      },
-      data: {},
-      loading: false
-    };
-    newState.path.name = JSON.parse(JSON.stringify(newState.path.name.slice(0, idx+1)));
-    newState.path.id = JSON.parse(JSON.stringify(newState.path.id.slice(0, idx+1)));
-    const lastIdx = newState.path.name.lenght-1;
-    const id = newState.path[lastIdx];
     const res = await request(id);
     for(let i of res){
       newState.data[i.id] = i;
     }
+    cache[id] = newState.data;
+    this.setState(newState);
+  }
+  // 선택한 과거 노드로 이동하는 함수
+  async past(idx) {
+    // 현재 폴더일 경우
+    if(idx === this.$state.path.id.length-1) return;
+    // newState
+    const newState = {
+      ...this.$state,
+      data: {},
+      loading: false
+    };
+    newState.path.name = [...this.$state.path.name].slice(0, idx+1);
+    newState.path.id = [...this.$state.path.id].slice(0, idx+1);
+    const lastIdx = newState.path.name.length-1;
+    const id = newState.path.id[lastIdx];
+    // cache
+    if(cache.hasOwnProperty(id)){
+      newState.data = cache[id];
+      this.setState(newState);
+      return;
+    }
+    // request
+    this.setState({
+      ...this.$state,
+      loading: true
+    });
+    const res = await request(id);
+    for(let i of res){
+      newState.data[i.id] = i;
+    }
+    cache[id] = newState.data;
     this.setState(newState);
   }
   // 이미지 파일 열기
@@ -157,10 +193,11 @@ export default class App extends Component {
       imgSrc: imgSrc
     });
   }
+  // 이미지 파일 닫기
   hideImage() {
     this.setState({
       ...this.$state,
       imgSrc: ''
-    })
+    });
   }
 }
