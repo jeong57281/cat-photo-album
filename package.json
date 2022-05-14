@@ -1,0 +1,19 @@
+{
+  "name": "cat-photo-album",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "serve -l 5000"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jeong57281/cat-photo-album.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jeong57281/cat-photo-album/issues"
+  },
+  "homepage": "https://github.com/jeong57281/cat-photo-album#readme"
+}
