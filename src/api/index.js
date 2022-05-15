@@ -6,7 +6,7 @@ export const request = async (nodeId) => {
      if(!res.ok) throw new Error('서버 에러');
      return await res.json()
   } catch(err) {
-    throw new Error(err);
+    console.log(err);
   }
 }
 // 오류가 발생한 경우 화면에 어떻게 알리지

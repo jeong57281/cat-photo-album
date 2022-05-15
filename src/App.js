@@ -20,7 +20,7 @@ export default class App extends Component {
      * @property {Object} node
      * 
      * @property {boolean} loading
-     * 
+     * @property {boolean} error - 에러 발생 여부
      * @property {string} imgSrc - 선택된 이미지 파일 경로
      */
     this.$state = {
@@ -30,6 +30,7 @@ export default class App extends Component {
       },
       data: {},
       loading: false,
+      error: false,
       imgSrc: ''
     };
     // cache
@@ -44,6 +45,12 @@ export default class App extends Component {
       loading: true
     });
     const res = await request();
+    if(!res){ // api 예외처리
+      this.$state.loading = false;
+      this.$state.error = true;
+      this.setState(this.$state);
+      return;
+    }
     for(let i of res){
       this.$state.data[i.id] = i;
     }
@@ -54,8 +61,13 @@ export default class App extends Component {
   }
   template() {
     return `
-      <Breadcrumb data-component="breadcrumb"></Breadcrumb>
-      <Nodes data-component="nodes"></Nodes>
+      ${ this.$state.error
+        ? '<div class="error">서버에 문제가 발생했습니다.</div>'
+        : `
+          <Breadcrumb data-component="breadcrumb"></Breadcrumb>
+          <Nodes data-component="nodes"></Nodes>
+          `
+      }
       <ImageView data-component="imageView"></ImageView>
       <Loading data-component="loading"></Loading>
     `;
@@ -115,6 +127,12 @@ export default class App extends Component {
       loading: true
     });
     const res = await request(id);
+    if(!res){ // api 예외처리
+      this.$state.loading = false;
+      this.$state.error = true;
+      this.setState(this.$state);
+      return;
+    }
     for(let i of res){
       newState.data[i.id] = i;
     }
@@ -148,6 +166,12 @@ export default class App extends Component {
       loading: true
     });
     const res = await request(id);
+    if(!res){ // api 예외처리
+      this.$state.loading = false;
+      this.$state.error = true;
+      this.setState(this.$state);
+      return;
+    }
     for(let i of res){
       newState.data[i.id] = i;
     }
@@ -180,6 +204,12 @@ export default class App extends Component {
       loading: true
     });
     const res = await request(id);
+    if(!res){ // api 예외처리
+      this.$state.loading = false;
+      this.$state.error = true;
+      this.setState(this.$state);
+      return;
+    }
     for(let i of res){
       newState.data[i.id] = i;
     }
